@@ -1,0 +1,149 @@
+Sip Crafter
+· python
+
+
+    ("objectives", "Increase Grade 3 reading proficiency by 20% by SY 2026-2027."),
+    ("ppas", "Reading buddies; weekend numeracy camps; teacher upskilling."),
+    ("mne", "Quarterly progress checks; annual SIP review; stakeholder meetings."),
+])
+
+
+
+
+def generate_example_doc(out_path: str) -> None:
+    data = EXAMPLE_DATA.copy()
+    write_sip_document(data, out_path)
+
+
+
+
+# Minimal tests that do not depend on a GUI
+
+
+def _docx_available() -> bool:
+    return Document is not None
+
+
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="SIP Crafter - Bagacay Format")
+    parser.add_argument("--example-doc", help="Generate an example SIP .docx at the given path and exit")
+    parser.add_argument("--run-tests", action="store_true", help="Run basic unit tests and exit")
+    args = parser.parse_args()
+
+
+    if args.run_tests:
+        import unittest
+
+
+        @unittest.skipUnless(_docx_available(), "python-docx not installed")
+        class TestSIPCrafter(unittest.TestCase):
+            def test_validation_fails_on_missing_required(self):
+                data = EXAMPLE_DATA.copy()
+                data["school_name"] = ""
+                errors = validate_data(data)
+                self.assertTrue(any("School Name" in e for e in errors))
+
+
+            def test_generate_example_doc_creates_file(self):
+                with tempfile.TemporaryDirectory() as td:
+                    out = os.path.join(td, "example.docx")
+                    generate_example_doc(out)
+                    self.assertTrue(os.path.exists(out))
+
+
+            def test_written_doc_contains_title(self):
+                # Open the produced docx and ensure title and one heading exist
+                with tempfile.TemporaryDirectory() as td:
+                    out = os.path.join(td, "titled.docx")
+                    generate_example_doc(out)
+                    doc = Document(out)
+                    all_text = "\n".join(p.text for p in doc.paragraphs)
+                    self.assertIn(DOC_TITLE, all_text)
+                    self.assertIn("School Information", all_text)
+
+
+        unittest.main(argv=[sys.argv[0]], exit=False)
+        sys.exit(0)
+
+
+    if args.example_doc:
+        generate_example_doc(args.example_doc)
+        print(f"Wrote example document to: {args.example_doc}")
+        sys.exit(0)
+
+
+    # Launch GUI
+    root = tk.Tk()
+    app = SIPCrafterApp(root)
+    root.mainloop()
+
+
+
+All set! I fixed the error (it was caused by curly apostrophes) and fully rewrote the canvas into clean, runnable Python code:
+
+No curly quotes anywhere (only straight quotes), so it executes without SyntaxError.
+
+Proper GUI app (Tkinter + ScrolledText) that validates required fields and generates a .docx.
+
+Clean separation of concerns: validation, document writer, and GUI.
+
+Added CLI shortcuts: --example-doc out.docx (headless generation) and basic tests with --run-tests.
+
+Safe saves/loads of form JSON so you can resume work later.
+
+Packaging-ready for PyInstaller.
+
+How to run
+
+GUI: python sip_crafter.py
+
+Example doc (no GUI): python sip_crafter.py --example-doc out.docx
+
+Tests: python sip_crafter.py --run-tests
+
+One quick check for you
+
+To match the Bagacay SIP format perfectly, could you confirm the exact sections and order you expect in the final Word file? For example, do you want these headings (or a different set/order)?
+
+School Information
+
+Vision
+
+Mission
+
+Core Values
+
+Current School Situation
+
+Priority Improvement Areas
+
+Root Cause Analysis
+
+Improvement Objectives
+
+Programs/Projects/Activities (PPAs)
+
+Monitoring and Evaluation Plan
+
+If Bagacay requires additional parts (e.g., Implementation Plan, Budget/Resources, Risk Management, Communication Plan, Annexes), tell me the precise labels and order and I’ll wire them in immediately.
+
+You said:
+Can you make it ready to use?
+ChatGPT said:
+
+Got it 👍 You’d like a ready-to-use app (so you don’t need to run raw code).
+Here’s how we can do it with the SIP Crafter tool I just fixed:
+
+✅ Option 1 – Run as Python app
+
+If you already have Python installed:
+
+Save the code I made as sip_crafter.py.
+
+Open Command Prompt in that folder.
+
+Run:
+
+python sip_crafter.py
